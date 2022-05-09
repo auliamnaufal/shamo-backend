@@ -11,41 +11,46 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    public function all(Request $request) {
+    public function all(Request $request)
+    {
         $id = $request->input('id');
         $limit = $request->input('limit', 6);
         $status = $request->input('status');
 
-        if ($id) {
+        if($id)
+        {
             $transaction = Transaction::with(['items.product'])->find($id);
 
-            if ($transaction) {
+            if($transaction)
                 return ResponseFormatter::success(
                     $transaction,
-                    'Transaction data successfuly retrieved'
+                    'Data transaksi berhasil diambil'
                 );
-            } else {
+            else
                 return ResponseFormatter::error(
                     null,
-                    'Transaction data not found',
+                    'Data transaksi tidak ada',
                     404
                 );
-            }
         }
 
         $transaction = Transaction::with(['items.product'])->where('users_id', Auth::user()->id);
 
-        if ($status) {
+        if($status)
             $transaction->where('status', $status);
-        }
 
         return ResponseFormatter::success(
             $transaction->paginate($limit),
-            'List transaction data successfuly retrieved'
+            'Data list transaksi berhasil diambil'
         );
     }
 
-    public function checkout(Request $request) {
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkout(Request $request)
+    {
         $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'exists:products,id',
@@ -59,9 +64,9 @@ class TransactionController extends Controller
             'address' => $request->address,
             'total_price' => $request->total_price,
             'shipping_price' => $request->shipping_price,
-            'status' => $request->status,
+            'status' => $request->status
         ]);
-
+        
         foreach ($request->items as $product) {
             TransactionItem::create([
                 'users_id' => Auth::user()->id,
@@ -71,6 +76,6 @@ class TransactionController extends Controller
             ]);
         }
 
-        return ResponseFormatter::success($transaction->load('items.product'), 'Transaction success');
+        return ResponseFormatter::success($transaction->load('items.product'), 'Transaksi berhasil');
     }
 }
