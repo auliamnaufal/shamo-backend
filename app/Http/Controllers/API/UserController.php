@@ -89,4 +89,28 @@ class UserController extends Controller
     public function fetch(Request $request) {
         return ResponseFormatter::success($request->user(), 'Profile Data user successfuly retrieved');
     }
+
+
+    public function updateProfile(Request $request) {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'email|required',
+            'username' => 'required',
+            'phone' => 'required'
+        ]);
+        $data = $request->all();
+
+        $user = Auth::user();
+        $user->update($data);
+
+        return ResponseFormatter::success($user, 'Profile Updated');
+
+    }
+
+    public function logout(Request $request) {
+        $token = $request->user()->currentAccessToken()->delete();
+
+        return ResponseFormatter::success($token, 'Token Revoked');
+
+    }
 }
